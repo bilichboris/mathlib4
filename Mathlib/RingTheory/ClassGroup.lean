@@ -370,7 +370,7 @@ theorem ClassGroup.isPrincipal_of_isUnit_coeIdeal [Subsingleton (ClassGroup R)]
     I.IsPrincipal := by
   have hsub :
       ((I : FractionalIdeal R⁰ K) : Submodule R K).IsPrincipal :=
-    ClassGroup.isPrincipal_submodule_of_isUnit (I := (I : FractionalIdeal R⁰ K)) hI
+    ClassGroup.isPrincipal_coeSubmodule_of_isUnit (I := (I : FractionalIdeal R⁰ K)) hI
   exact (IsFractionRing.coeSubmodule_isPrincipal (R := R) (K := K) (I := I)).1
     (by simpa using hsub)
 

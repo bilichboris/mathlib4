@@ -81,7 +81,7 @@ lemma isPrincipal_of_exists_mul_ne_zero_isPrincipal
 /-- In a normalized GCD domain, an integral ideal that is invertible as a fractional ideal
 is principal.
 
-Public API note: see `ClassGroup.isPrincipal_ideal_of_isUnit`. -/
+Public API note: see `ClassGroup.isPrincipal_of_isUnit_coeIdeal`. -/
 private theorem isPrincipal_of_isUnit_fractionalIdeal (I : Ideal R)
     (hI : IsUnit (I : FractionalIdeal R⁰ (FractionRing R))) :
     I.IsPrincipal := by
@@ -107,7 +107,7 @@ private theorem isPrincipal_of_isUnit_fractionalIdeal (I : Ideal R)
 
 /-- In a normalized GCD domain, every invertible fractional ideal is principal.
 
-Public API note: see `ClassGroup.isPrincipal_submodule_of_isUnit`. -/
+Public API note: see `ClassGroup.isPrincipal_coeSubmodule_of_isUnit`. -/
 private theorem isPrincipal_fractionalIdeal_of_isUnit
     (I : (FractionalIdeal R⁰ (FractionRing R))ˣ) :
     (I : Submodule R (FractionRing R)).IsPrincipal := by
