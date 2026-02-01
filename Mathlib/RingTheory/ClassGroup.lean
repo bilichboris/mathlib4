@@ -354,6 +354,26 @@ theorem ClassGroup.mk_eq_one_iff {I : (FractionalIdeal R⁰ K)ˣ} :
   · intro x_eq; apply Units.ne_zero I; simp [hx', x_eq]
   · simp [hx']
 
+/-- If the class group is trivial, any unit fractional ideal is principal. -/
+theorem ClassGroup.isPrincipal_submodule_of_isUnit [Subsingleton (ClassGroup R)]
+    (I : FractionalIdeal R⁰ K) (hI : IsUnit I) :
+    (I : Submodule R K).IsPrincipal := by
+  rcases hI with ⟨I, rfl⟩
+  have hmk : ClassGroup.mk I = 1 := by
+    simpa using (Subsingleton.elim (ClassGroup.mk I) 1)
+  exact (ClassGroup.mk_eq_one_iff).1 hmk
+
+/-- If the class group is trivial, any integral ideal that is a unit as a fractional ideal
+is principal. -/
+theorem ClassGroup.isPrincipal_ideal_of_isUnit [Subsingleton (ClassGroup R)]
+    (I : Ideal R) (hI : IsUnit (I : FractionalIdeal R⁰ K)) :
+    I.IsPrincipal := by
+  have hsub :
+      ((I : FractionalIdeal R⁰ K) : Submodule R K).IsPrincipal :=
+    ClassGroup.isPrincipal_submodule_of_isUnit (I := (I : FractionalIdeal R⁰ K)) hI
+  exact (IsFractionRing.coeSubmodule_isPrincipal (R := R) (K := K) (I := I)).1
+    (by simpa using hsub)
+
 theorem ClassGroup.mk0_eq_one_iff [IsDedekindDomain R] {I : Ideal R} (hI : I ∈ (Ideal R)⁰) :
     ClassGroup.mk0 ⟨I, hI⟩ = 1 ↔ I.IsPrincipal :=
   ClassGroup.mk_eq_one_iff.trans (coeSubmodule_isPrincipal R _)
