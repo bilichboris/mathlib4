@@ -836,10 +836,18 @@ variable [LeftCancelMonoid G]
 section Finite
 variable [Finite G] {x y : G} {n : ℕ}
 
--- TODO: Use this to show that a finite left cancellative monoid is a group.
 @[to_additive]
 lemma isOfFinOrder_of_finite (x : G) : IsOfFinOrder x := by
   by_contra h; exact infinite_not_isOfFinOrder h <| Set.toFinite _
+
+/-- Every finite left cancellative monoid is a group. -/
+@[to_additive /-- Every finite left cancellative additive monoid is an additive group. -/]
+noncomputable instance : Group G :=
+  { inferInstanceAs (Monoid G) with
+    inv := fun x => x ^ (orderOf x - 1)
+    inv_mul_cancel := fun x => by
+      rw [← pow_succ, tsub_add_cancel_of_le, pow_orderOf_eq_one]
+      exact (isOfFinOrder_of_finite x).orderOf_pos }
 
 /-- This is the same as `IsOfFinOrder.orderOf_pos` but with one fewer explicit assumption since this
 is automatic in case of a finite cancellative monoid. -/
