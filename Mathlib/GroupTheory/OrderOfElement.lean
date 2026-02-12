@@ -842,7 +842,7 @@ lemma isOfFinOrder_of_finite (x : G) : IsOfFinOrder x := by
 
 /-- Every finite left cancellative monoid is a group. -/
 @[to_additive /-- Every finite left cancellative additive monoid is an additive group. -/]
-noncomputable instance : Group G :=
+noncomputable def Group_of_Finite_LeftCancelMonoid : Group G :=
   { inferInstanceAs (Monoid G) with
     inv := fun x => x ^ (orderOf x - 1)
     inv_mul_cancel := fun x => by
