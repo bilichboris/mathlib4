@@ -842,12 +842,11 @@ lemma isOfFinOrder_of_finite (x : G) : IsOfFinOrder x := by
 
 /-- Every finite left cancellative monoid is a group. -/
 @[to_additive /-- Every finite left cancellative additive monoid is an additive group. -/]
-noncomputable def Group_of_Finite_LeftCancelMonoid : Group G :=
-  { inferInstanceAs (Monoid G) with
-    inv := fun x => x ^ (orderOf x - 1)
-    inv_mul_cancel := fun x => by
-      rw [← pow_succ, tsub_add_cancel_of_le, pow_orderOf_eq_one]
-      exact (isOfFinOrder_of_finite x).orderOf_pos }
+noncomputable def groupOfFiniteOfLeftCancelMonoid : Group G where
+  inv x := x ^ (orderOf x - 1)
+  inv_mul_cancel x := by
+    rw [← pow_succ, tsub_add_cancel_of_le, pow_orderOf_eq_one]
+    exact (isOfFinOrder_of_finite x).orderOf_pos
 
 /-- This is the same as `IsOfFinOrder.orderOf_pos` but with one fewer explicit assumption since this
 is automatic in case of a finite cancellative monoid. -/
