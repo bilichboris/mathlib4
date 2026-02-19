@@ -47,11 +47,10 @@ noncomputable instance instAlgebraPiLpEnd :
 
 /-- Diagonal operator on a finite `PiLp 2` direct sum. -/
 noncomputable def diagOp (a : H →L[ℂ] H) :
-    PiLp 2 (fun _ : ι => H) →L[ℂ] PiLp 2 (fun _ : ι => H) := by
+    PiLp 2 (fun _ : ι => H) →L[ℂ] PiLp 2 (fun _ : ι => H) :=
   let e : (PiLp 2 (fun _ : ι => H)) ≃L[ℂ] ((i : ι) → H) :=
     PiLp.continuousLinearEquiv 2 ℂ (fun _ : ι => H)
-  exact e.symm.toContinuousLinearMap ∘L ((ContinuousLinearMap.piMap fun _ : ι => a) ∘L
-    e.toContinuousLinearMap)
+  e.symm ∘L (piMap fun _ : ι => a) ∘L e
 
 /-- Coordinatewise formula for `diagOp`. -/
 @[simp] theorem diagOp_apply (a : H →L[ℂ] H) (x : PiLp 2 (fun _ : ι => H)) (i : ι) :
