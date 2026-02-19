@@ -380,13 +380,14 @@ theorem doubleCentralizer_apply_mem_closure_image_apply
 
 /-- Diagonal lift of a double-centralizer element remains in the corresponding double centralizer
 on finite direct sums. -/
-lemma diagOp_mem_doubleCentralizer_map {ι : Type v} [Fintype ι] [DecidableEq ι]
+lemma diagOp_mem_doubleCentralizer_map {ι : Type v} [Fintype ι]
     (S : StarSubalgebra ℂ (H →L[ℂ] H)) {x : H →L[ℂ] H}
     (hx : x ∈ Set.centralizer (Set.centralizer (S : Set (H →L[ℂ] H)))) :
     ContinuousLinearMap.diagOp (H := H) (ι := ι) x ∈ Set.centralizer
       (Set.centralizer
         ((StarSubalgebra.map (ContinuousLinearMap.diagOpStarAlgHom (H := H) (ι := ι)) S :
           Set (PiLp 2 (fun _ : ι => H) →L[ℂ] PiLp 2 (fun _ : ι => H)))) ) := by
+  classical
   intro z hz
   have hEntryMem : ∀ i j,
       ContinuousLinearMap.diagOpEntry (H := H) z i j ∈ Set.centralizer (S : Set (H →L[ℂ] H)) := by
@@ -439,13 +440,14 @@ lemma diagOp_mem_doubleCentralizer_map {ι : Type v} [Fintype ι] [DecidableEq �
 
 /-- Finite-family closure approximation obtained from the matrix trick on finite direct sums. -/
 theorem doubleCentralizer_finite_family_mem_closure_image_apply {ι : Type v} [Fintype ι]
-    [DecidableEq ι] (S : StarSubalgebra ℂ (H →L[ℂ] H))
+    (S : StarSubalgebra ℂ (H →L[ℂ] H))
     {x : H →L[ℂ] H}
     (hx : x ∈ Set.centralizer (Set.centralizer (S : Set (H →L[ℂ] H))))
     (ξ : PiLp 2 (fun _ : ι => H)) :
     ContinuousLinearMap.diagOp (H := H) (ι := ι) x ξ ∈
       closure ((fun a : H →L[ℂ] H =>
         ContinuousLinearMap.diagOp (H := H) (ι := ι) a ξ) '' (S : Set (H →L[ℂ] H))) := by
+  classical
   let Sdiag : StarSubalgebra ℂ (PiLp 2 (fun _ : ι => H) →L[ℂ] PiLp 2 (fun _ : ι => H)) :=
     StarSubalgebra.map (ContinuousLinearMap.diagOpStarAlgHom (H := H) (ι := ι)) S
   have hxdiag : ContinuousLinearMap.diagOp (H := H) (ι := ι) x ∈
