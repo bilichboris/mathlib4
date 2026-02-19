@@ -11,8 +11,20 @@ public import Mathlib.Analysis.InnerProductSpace.PiL2
 /-!
 # Diagonal operators on finite `PiLp 2` direct sums
 
-This file defines the diagonal action of an operator `a : H →L[ℂ] H` on a finite `PiLp 2` direct
-sum, together with basic algebraic properties and the associated coordinate maps.
+This file defines diagonal actions of bounded operators on finite direct sums represented as
+`PiLp 2`, together with coordinate maps for matrix-entry arguments.
+
+## Main definitions
+
+* `ContinuousLinearMap.diagOp`: diagonal action of `a : H →L[ℂ] H` on
+  `PiLp 2 (fun _ : ι => H)`.
+* `ContinuousLinearMap.diagOpStarAlgHom`: the induced `⋆`-algebra morphism.
+* `ContinuousLinearMap.diagOpSingle`: injection into a single coordinate.
+* `ContinuousLinearMap.diagOpEntry`: extraction of an `(i,j)` entry operator.
+
+## Tags
+
+diagonal operator, direct sum, Hilbert space, PiLp
 -/
 
 @[expose] public section
@@ -28,6 +40,7 @@ variable {ι : Type v} [Fintype ι]
 
 noncomputable section
 
+/-- The endomorphism space of `PiLp 2 (fun _ : ι => H)` has its canonical `ℂ`-algebra structure. -/
 noncomputable instance instAlgebraPiLpEnd :
     Algebra ℂ (PiLp 2 (fun _ : ι => H) →L[ℂ] PiLp 2 (fun _ : ι => H)) :=
   (ContinuousLinearMap.toNormedAlgebra (𝕜 := ℂ) (E := PiLp 2 (fun _ : ι => H))).toAlgebra
@@ -60,6 +73,8 @@ noncomputable def diagOp (a : H →L[ℂ] H) :
     (PiLp.proj 2 (fun _ : ι => H) i) ∘L diagOp a = a ∘L (PiLp.proj 2 (fun _ : ι => H) i) := by
   ext x
   simp [diagOp_apply]
+
+/-! ### Compatibility with adjoints -/
 
 section CompleteSpace
 
@@ -96,6 +111,8 @@ noncomputable def diagOpStarAlgHom :
       map_star' _ := diagOp_star (H := H) (ι := ι) _ }
 
 end CompleteSpace
+
+/-! ### Coordinate injections and matrix entries -/
 
 section DecidableEq
 
