@@ -6,8 +6,7 @@ Authors: Kim Morrison
 module
 
 public import Mathlib.Analysis.CStarAlgebra.Classes
-public import Mathlib.Analysis.InnerProductSpace.Adjoint
-public import Mathlib.Analysis.InnerProductSpace.PiL2
+public import Mathlib.Analysis.InnerProductSpace.Diagonal
 public import Mathlib.Analysis.InnerProductSpace.WeakOperatorTopology
 
 /-!
@@ -78,146 +77,6 @@ structure VonNeumannAlgebra (H : Type u) [NormedAddCommGroup H] [InnerProductSpa
 or equivalently that it is closed in the weak and strong operator topologies.)
 -/
 add_decl_doc VonNeumannAlgebra.toStarSubalgebra
-
-namespace ContinuousLinearMap
-
-variable {H : Type u} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-variable {ι : Type v} [Fintype ι] [DecidableEq ι]
-
-noncomputable section
-
-noncomputable instance instAlgebraPiLpEnd :
-    Algebra ℂ (PiLp 2 (fun _ : ι => H) →L[ℂ] PiLp 2 (fun _ : ι => H)) :=
-  (ContinuousLinearMap.toNormedAlgebra (𝕜 := ℂ) (E := PiLp 2 (fun _ : ι => H))).toAlgebra
-
-/-- Diagonal operator on a finite `PiLp 2` direct sum. -/
-noncomputable def diagOp (a : H →L[ℂ] H) :
-    PiLp 2 (fun _ : ι => H) →L[ℂ] PiLp 2 (fun _ : ι => H) := by
-  let e : (PiLp 2 (fun _ : ι => H)) ≃L[ℂ] ((i : ι) → H) :=
-    PiLp.continuousLinearEquiv 2 ℂ (fun _ : ι => H)
-  exact e.symm.toContinuousLinearMap ∘L ((ContinuousLinearMap.piMap fun _ : ι => a) ∘L
-    e.toContinuousLinearMap)
-
-omit [CompleteSpace H] [DecidableEq ι] in
-/-- Coordinatewise formula for `diagOp`. -/
-@[simp] theorem diagOp_apply (a : H →L[ℂ] H) (x : PiLp 2 (fun _ : ι => H)) (i : ι) :
-    (diagOp a x) i = a (x i) := by
-  simp [diagOp]
-
-omit [CompleteSpace H] [DecidableEq ι] in
-/-- Multiplicativity of `diagOp`. -/
-@[simp] theorem diagOp_mul (a b : H →L[ℂ] H) : diagOp (ι := ι) (a * b) = diagOp a * diagOp b := by
-  ext x i
-  simp [ContinuousLinearMap.mul_def]
-
-omit [CompleteSpace H] [DecidableEq ι] in
-/-- Unitality of `diagOp`. -/
-@[simp] theorem diagOp_one : diagOp (ι := ι) (1 : H →L[ℂ] H) = 1 := by
-  ext x i
-  simp
-
-omit [DecidableEq ι] in
-/-- Compatibility of `diagOp` with adjoints. -/
-@[simp] theorem diagOp_star (a : H →L[ℂ] H) : diagOp (ι := ι) (star a) = star (diagOp a) := by
-  rw [ContinuousLinearMap.star_eq_adjoint, ContinuousLinearMap.star_eq_adjoint,
-    ContinuousLinearMap.eq_adjoint_iff]
-  intro x y
-  simp only [diagOp_apply, PiLp.inner_apply]
-  refine Finset.sum_congr rfl ?_
-  intro i _
-  simpa using (ContinuousLinearMap.adjoint_inner_left (A := a) (x := y i) (y := x i))
-
-/-- The canonical star-algebra morphism sending an operator to its diagonal action on a finite
-`PiLp 2` direct sum. -/
-noncomputable def diagOpStarAlgHom :
-    (H →L[ℂ] H) →⋆ₐ[ℂ] (PiLp 2 (fun _ : ι => H) →L[ℂ] PiLp 2 (fun _ : ι => H)) := by
-  exact
-    { toFun := diagOp (ι := ι)
-      map_one' := diagOp_one (H := H) (ι := ι)
-      map_mul' _ _ := diagOp_mul (H := H) (ι := ι) _ _
-      map_zero' := by
-        ext x i
-        simp [diagOp_apply]
-      map_add' _ _ := by
-        ext x i
-        simp [diagOp_apply]
-      commutes' z := by
-        ext x i
-        change z • (x i) = (z • x) i
-        simp
-      map_star' _ := diagOp_star (H := H) (ι := ι) _ }
-
-/-- `diagOpSingle i` injects a vector into coordinate `i` of a finite `PiLp 2` direct sum. -/
-noncomputable def diagOpSingle (i : ι) : H →L[ℂ] PiLp 2 (fun _ : ι => H) := by
-  let e : (PiLp 2 (fun _ : ι => H)) ≃L[ℂ] ((j : ι) → H) :=
-    PiLp.continuousLinearEquiv 2 ℂ (fun _ : ι => H)
-  exact e.symm.toContinuousLinearMap ∘L (ContinuousLinearMap.single ℂ (fun _ : ι => H) i)
-
-omit [CompleteSpace H] in
-/-- Formula for coordinates of `diagOpSingle`. -/
-@[simp] theorem diagOpSingle_apply (i j : ι) (x : H) :
-    (diagOpSingle (H := H) i x) j = if j = i then x else 0 := by
-  by_cases hji : j = i
-  · subst hji
-    simp [diagOpSingle]
-  · simp [diagOpSingle, hji]
-
-omit [CompleteSpace H] in
-/-- Decomposition of a vector as sum of coordinate singletons. -/
-@[simp] theorem sum_diagOpSingle (x : PiLp 2 (fun _ : ι => H)) :
-    (∑ i, diagOpSingle (H := H) i (x i)) = x := by
-  ext j
-  simp [diagOpSingle_apply]
-
-omit [CompleteSpace H] [DecidableEq ι] in
-/-- Projection commutes with diagonal action. -/
-@[simp] theorem proj_comp_diagOp (a : H →L[ℂ] H) (i : ι) :
-    (PiLp.proj 2 (fun _ : ι => H) i) ∘L diagOp a = a ∘L (PiLp.proj 2 (fun _ : ι => H) i) := by
-  ext x
-  simp [diagOp_apply]
-
-omit [CompleteSpace H] in
-/-- Coordinate singleton intertwines diagonal action. -/
-@[simp] theorem diagOp_comp_single (a : H →L[ℂ] H) (i : ι) :
-    diagOp a ∘L diagOpSingle (H := H) i = diagOpSingle (H := H) i ∘L a := by
-  ext x j
-  by_cases hji : j = i
-  · subst hji
-    simp [diagOpSingle_apply]
-  · simp [diagOpSingle_apply, hji]
-
-/-- The `(i,j)` entry operator extracted from an operator on a finite `PiLp 2` direct sum. -/
-noncomputable def diagOpEntry (z : PiLp 2 (fun _ : ι => H) →L[ℂ] PiLp 2 (fun _ : ι => H))
-    (i j : ι) : H →L[ℂ] H :=
-  (PiLp.proj 2 (fun _ : ι => H) i) ∘L z ∘L diagOpSingle (H := H) j
-
-omit [CompleteSpace H] in
-/-- Formula for applying an extracted `(i,j)` entry operator. -/
-@[simp] theorem diagOpEntry_apply (z : PiLp 2 (fun _ : ι => H) →L[ℂ] PiLp 2 (fun _ : ι => H))
-    (i j : ι) (x : H) :
-    diagOpEntry (H := H) z i j x = (z (diagOpSingle (H := H) j x)) i := rfl
-
-omit [CompleteSpace H] in
-/-- Coordinate expansion in terms of extracted entries. -/
-lemma coord_eq_sum_diagOpEntry (z : PiLp 2 (fun _ : ι => H) →L[ℂ] PiLp 2 (fun _ : ι => H))
-    (i : ι) (v : PiLp 2 (fun _ : ι => H)) :
-    (z v) i = ∑ j, diagOpEntry (H := H) z i j (v j) := by
-  have hzsum : z (∑ j, diagOpSingle (H := H) j (v j)) = z v :=
-    congrArg z (sum_diagOpSingle (H := H) (ι := ι) v)
-  have hzmap : z (∑ j, diagOpSingle (H := H) j (v j)) =
-      ∑ j, z (diagOpSingle (H := H) j (v j)) := by
-    simpa using map_sum z (fun j => diagOpSingle (H := H) j (v j)) Finset.univ
-  calc
-    (z v) i = (z (∑ j, diagOpSingle (H := H) j (v j))) i := by
-      exact congrArg (fun w : PiLp 2 (fun _ : ι => H) => w i) hzsum.symm
-    _ = (∑ j, z (diagOpSingle (H := H) j (v j))) i := by
-      exact congrArg (fun w : PiLp 2 (fun _ : ι => H) => w i) hzmap
-    _ = ∑ j, (z (diagOpSingle (H := H) j (v j))) i := by simp
-    _ = ∑ j, diagOpEntry (H := H) z i j (v j) := by simp [diagOpEntry]
-
-end
-
-end ContinuousLinearMap
 
 namespace VonNeumannAlgebra
 
@@ -378,65 +237,62 @@ theorem doubleCentralizer_apply_mem_closure_image_apply
   rw [hK0] at hxξClosure
   exact hxξClosure
 
+section
+
+open ContinuousLinearMap
+
 /-- Diagonal lift of a double-centralizer element remains in the corresponding double centralizer
 on finite direct sums. -/
 lemma diagOp_mem_doubleCentralizer_map {ι : Type v} [Fintype ι]
     (S : StarSubalgebra ℂ (H →L[ℂ] H)) {x : H →L[ℂ] H}
     (hx : x ∈ Set.centralizer (Set.centralizer (S : Set (H →L[ℂ] H)))) :
-    ContinuousLinearMap.diagOp (H := H) (ι := ι) x ∈ Set.centralizer
+    diagOp (H := H) (ι := ι) x ∈ Set.centralizer
       (Set.centralizer
-        ((StarSubalgebra.map (ContinuousLinearMap.diagOpStarAlgHom (H := H) (ι := ι)) S :
+        ((StarSubalgebra.map (diagOpStarAlgHom (H := H) (ι := ι)) S :
           Set (PiLp 2 (fun _ : ι => H) →L[ℂ] PiLp 2 (fun _ : ι => H)))) ) := by
   classical
   intro z hz
   have hEntryMem : ∀ i j,
-      ContinuousLinearMap.diagOpEntry (H := H) z i j ∈ Set.centralizer (S : Set (H →L[ℂ] H)) := by
+      diagOpEntry (H := H) z i j ∈ Set.centralizer (S : Set (H →L[ℂ] H)) := by
     intro i j a ha
-    have haDiag : ContinuousLinearMap.diagOp (ι := ι) a ∈
-        (StarSubalgebra.map (ContinuousLinearMap.diagOpStarAlgHom (H := H) (ι := ι)) S :
+    have haDiag : diagOp (ι := ι) a ∈
+        (StarSubalgebra.map (diagOpStarAlgHom (H := H) (ι := ι)) S :
           Set (PiLp 2 (fun _ : ι => H) →L[ℂ] PiLp 2 (fun _ : ι => H))) :=
       ⟨a, ha, rfl⟩
-    have hza : ContinuousLinearMap.diagOp (ι := ι) a * z =
-        z * ContinuousLinearMap.diagOp (ι := ι) a := hz _ haDiag
+    have hza : diagOp (ι := ι) a * z = z * diagOp (ι := ι) a := hz _ haDiag
     ext u
     have hu := congrArg (fun T : (PiLp 2 (fun _ : ι => H) →L[ℂ] PiLp 2 (fun _ : ι => H)) =>
-      (T (ContinuousLinearMap.diagOpSingle (H := H) j u)) i) hza
-    have hs : (ContinuousLinearMap.diagOp (ι := ι) a)
-        (ContinuousLinearMap.diagOpSingle (H := H) j u) =
-        ContinuousLinearMap.diagOpSingle (H := H) j (a u) := by
+      (T (diagOpSingle (H := H) j u)) i) hza
+    have hs : (diagOp (ι := ι) a) (diagOpSingle (H := H) j u) =
+        diagOpSingle (H := H) j (a u) := by
       ext k
       by_cases hk : k = j
       · subst hk
-        simp [ContinuousLinearMap.diagOp_apply, ContinuousLinearMap.diagOpSingle_apply]
-      · simp [ContinuousLinearMap.diagOp_apply, ContinuousLinearMap.diagOpSingle_apply, hk]
-    have hu' : a ((z (ContinuousLinearMap.diagOpSingle (H := H) j u)) i) =
-        (z (ContinuousLinearMap.diagOpSingle (H := H) j (a u))) i := by
-      simpa [ContinuousLinearMap.mul_def, hs] using hu
-    simpa [ContinuousLinearMap.mul_def, ContinuousLinearMap.diagOpEntry] using hu'
+        simp [diagOp_apply, diagOpSingle_apply]
+      · simp [diagOp_apply, diagOpSingle_apply, hk]
+    have hu' : a ((z (diagOpSingle (H := H) j u)) i) = (z (diagOpSingle (H := H) j (a u))) i := by
+      simpa [mul_def, hs] using hu
+    simpa [mul_def, diagOpEntry] using hu'
   ext v i
   have hleft :
-      (z (ContinuousLinearMap.diagOp (ι := ι) x v)) i =
-        ∑ j, ContinuousLinearMap.diagOpEntry (H := H) z i j (x (v j)) := by
-    simpa [ContinuousLinearMap.diagOp_apply] using
-      (ContinuousLinearMap.coord_eq_sum_diagOpEntry (H := H) z i
-        (ContinuousLinearMap.diagOp (ι := ι) x v))
+      (z (diagOp (ι := ι) x v)) i = ∑ j, diagOpEntry (H := H) z i j (x (v j)) := by
+    simpa [diagOp_apply] using (coord_eq_sum_diagOpEntry (H := H) z i (diagOp (ι := ι) x v))
   have hright :
-      (ContinuousLinearMap.diagOp (ι := ι) x (z v)) i =
-        ∑ j, ContinuousLinearMap.diagOpEntry (H := H) z i j (x (v j)) := by
+      (diagOp (ι := ι) x (z v)) i = ∑ j, diagOpEntry (H := H) z i j (x (v j)) := by
     calc
-      (ContinuousLinearMap.diagOp (ι := ι) x (z v)) i = x ((z v) i) := by
-        simp [ContinuousLinearMap.diagOp_apply]
-      _ = x (∑ j, ContinuousLinearMap.diagOpEntry (H := H) z i j (v j)) := by
-        rw [ContinuousLinearMap.coord_eq_sum_diagOpEntry (H := H) z i v]
-      _ = ∑ j, x (ContinuousLinearMap.diagOpEntry (H := H) z i j (v j)) := by simp
-      _ = ∑ j, ContinuousLinearMap.diagOpEntry (H := H) z i j (x (v j)) := by
+      (diagOp (ι := ι) x (z v)) i = x ((z v) i) := by
+        simp [diagOp_apply]
+      _ = x (∑ j, diagOpEntry (H := H) z i j (v j)) := by
+        rw [coord_eq_sum_diagOpEntry (H := H) z i v]
+      _ = ∑ j, x (diagOpEntry (H := H) z i j (v j)) := by simp
+      _ = ∑ j, diagOpEntry (H := H) z i j (x (v j)) := by
         refine Finset.sum_congr rfl ?_
         intro j _
-        have hcomm : ContinuousLinearMap.diagOpEntry (H := H) z i j * x =
-            x * ContinuousLinearMap.diagOpEntry (H := H) z i j := hx _ (hEntryMem i j)
+        have hcomm : diagOpEntry (H := H) z i j * x = x * diagOpEntry (H := H) z i j := by
+          exact hx _ (hEntryMem i j)
         have hcommv := congrArg (fun T : H →L[ℂ] H => T (v j)) hcomm
-        simpa [ContinuousLinearMap.mul_def] using hcommv.symm
-  simp [ContinuousLinearMap.mul_def, hleft, hright]
+        simpa [mul_def] using hcommv.symm
+  simp [mul_def, hleft, hright]
 
 /-- Finite-family closure approximation obtained from the matrix trick on finite direct sums. -/
 theorem doubleCentralizer_finite_family_mem_closure_image_apply {ι : Type v} [Fintype ι]
@@ -444,23 +300,22 @@ theorem doubleCentralizer_finite_family_mem_closure_image_apply {ι : Type v} [F
     {x : H →L[ℂ] H}
     (hx : x ∈ Set.centralizer (Set.centralizer (S : Set (H →L[ℂ] H))))
     (ξ : PiLp 2 (fun _ : ι => H)) :
-    ContinuousLinearMap.diagOp (H := H) (ι := ι) x ξ ∈
-      closure ((fun a : H →L[ℂ] H =>
-        ContinuousLinearMap.diagOp (H := H) (ι := ι) a ξ) '' (S : Set (H →L[ℂ] H))) := by
+    diagOp (H := H) (ι := ι) x ξ ∈
+      closure ((fun a : H →L[ℂ] H => diagOp (H := H) (ι := ι) a ξ) '' (S : Set (H →L[ℂ] H))) := by
   classical
   let Sdiag : StarSubalgebra ℂ (PiLp 2 (fun _ : ι => H) →L[ℂ] PiLp 2 (fun _ : ι => H)) :=
-    StarSubalgebra.map (ContinuousLinearMap.diagOpStarAlgHom (H := H) (ι := ι)) S
-  have hxdiag : ContinuousLinearMap.diagOp (H := H) (ι := ι) x ∈
+    StarSubalgebra.map (diagOpStarAlgHom (H := H) (ι := ι)) S
+  have hxdiag : diagOp (H := H) (ι := ι) x ∈
       Set.centralizer (Set.centralizer (Sdiag : Set
         (PiLp 2 (fun _ : ι => H) →L[ℂ] PiLp 2 (fun _ : ι => H)))) :=
     diagOp_mem_doubleCentralizer_map (H := H) (ι := ι) S hx
   have hcyc := doubleCentralizer_apply_mem_closure_image_apply
     (H := PiLp 2 (fun _ : ι => H)) (S := Sdiag)
-    (x := ContinuousLinearMap.diagOp (H := H) (ι := ι) x) hxdiag ξ
+    (x := diagOp (H := H) (ι := ι) x) hxdiag ξ
   have hset :
       ((fun a : PiLp 2 (fun _ : ι => H) →L[ℂ] PiLp 2 (fun _ : ι => H) => a ξ) '' (Sdiag : Set
         (PiLp 2 (fun _ : ι => H) →L[ℂ] PiLp 2 (fun _ : ι => H)))) =
-      ((fun a : H →L[ℂ] H => ContinuousLinearMap.diagOp (H := H) (ι := ι) a ξ) '' (S : Set
+      ((fun a : H →L[ℂ] H => diagOp (H := H) (ι := ι) a ξ) '' (S : Set
         (H →L[ℂ] H))) := by
     ext v
     constructor
@@ -468,8 +323,10 @@ theorem doubleCentralizer_finite_family_mem_closure_image_apply {ι : Type v} [F
       rcases ha with ⟨b, hb, rfl⟩
       exact ⟨b, hb, rfl⟩
     · rintro ⟨a, ha, rfl⟩
-      exact ⟨ContinuousLinearMap.diagOp (H := H) (ι := ι) a, ⟨a, ha, rfl⟩, rfl⟩
+      exact ⟨diagOp (H := H) (ι := ι) a, ⟨a, ha, rfl⟩, rfl⟩
   simpa [hset] using hcyc
+
+end
 
 /-- WOT closure membership for a double-centralizer element. -/
 theorem doubleCentralizer_mem_closure_image_toWOT
