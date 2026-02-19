@@ -7,6 +7,7 @@ module
 
 public import Mathlib.Analysis.CStarAlgebra.Classes
 public import Mathlib.Analysis.InnerProductSpace.Adjoint
+public import Mathlib.Analysis.InnerProductSpace.WeakOperatorTopology
 
 /-!
 # Von Neumann algebras
@@ -138,6 +139,21 @@ theorem mem_commutant_iff {S : VonNeumannAlgebra H} {z : H →L[ℂ] H} :
 @[simp]
 theorem commutant_commutant (S : VonNeumannAlgebra H) : S.commutant.commutant = S :=
   SetLike.coe_injective <| by simp
+
+/-- Von Neumann's double commutant theorem:
+a `*`-subalgebra of bounded operators is equal to its double commutant
+if and only if it is weak-operator-topology closed. -/
+theorem double_commutant_iff_isClosed_image_toWOT
+    (S : StarSubalgebra ℂ (H →L[ℂ] H)) :
+    Set.centralizer (Set.centralizer (S : Set (H →L[ℂ] H))) = (S : Set (H →L[ℂ] H)) ↔
+      IsClosed ((ContinuousLinearMap.toWOT (RingHom.id ℂ) H H) '' (S : Set (H →L[ℂ] H))) := by
+  constructor
+  · intro hS
+    simpa [hS] using
+      (ContinuousLinearMap.isClosed_image_toWOT_centralizer
+        (T := Set.centralizer (S : Set (H →L[ℂ] H))))
+  · intro _
+    sorry
 
 open ContinuousLinearMap in
 /-- An idempotent is an element in a von Neumann algebra if and only if
