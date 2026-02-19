@@ -353,17 +353,15 @@ theorem double_centralizer_finite_family_mem_closure_image_apply {ι : Type v} [
       exact ⟨diagOp (H := H) (ι := ι) a, ⟨a, ha, rfl⟩, rfl⟩
   simpa [hset] using hcyc
 
-end
-
 /-- An element of the double centralizer of `S` belongs to the WOT-closure of `S`. -/
 theorem double_centralizer_mem_closure_image_toWOT
     (S : StarSubalgebra ℂ (H →L[ℂ] H))
     {x : H →L[ℂ] H}
     (hx : x ∈ Set.centralizer (Set.centralizer (S : Set (H →L[ℂ] H)))) :
-    (ContinuousLinearMap.toWOT (RingHom.id ℂ) H H x) ∈
-      closure ((ContinuousLinearMap.toWOT (RingHom.id ℂ) H H) '' (S : Set (H →L[ℂ] H))) := by
+    (toWOT (RingHom.id ℂ) H H x) ∈
+      closure ((toWOT (RingHom.id ℂ) H H) '' (S : Set (H →L[ℂ] H))) := by
   classical
-  let toWOT : (H →L[ℂ] H) → (H →WOT[ℂ] H) := ContinuousLinearMap.toWOT (RingHom.id ℂ) H H
+  let toWOT : (H →L[ℂ] H) → (H →WOT[ℂ] H) := toWOT (RingHom.id ℂ) H H
   let p : SeminormFamily ℂ (H →WOT[ℂ] H) (H × StrongDual ℂ H) :=
     ContinuousLinearMapWOT.seminormFamily (RingHom.id ℂ) H H
   have hp : WithSeminorms p :=
@@ -384,9 +382,9 @@ theorem double_centralizer_mem_closure_image_toWOT
   let ξs : PiLp 2 (fun _ : s => H) := WithLp.toLp 2 (fun q : s => q.1.1)
   letI : DecidableEq s := Classical.decEq s
   have hclosePi :
-      ContinuousLinearMap.diagOp (H := H) (ι := s) x ξs ∈
+      diagOp (H := H) (ι := s) x ξs ∈
         closure ((fun a : H →L[ℂ] H =>
-          ContinuousLinearMap.diagOp (H := H) (ι := s) a ξs) '' (S : Set (H →L[ℂ] H))) :=
+          diagOp (H := H) (ι := s) a ξs) '' (S : Set (H →L[ℂ] H))) :=
     double_centralizer_finite_family_mem_closure_image_apply (H := H) (ι := s) S hx ξs
   rcases Metric.mem_closure_iff.1 hclosePi ε hε with ⟨w, hw, hdist⟩
   rcases hw with ⟨a, ha, rfl⟩
@@ -398,14 +396,14 @@ theorem double_centralizer_mem_closure_image_toWOT
     let qs : s := ⟨q, hq⟩
     have hcoord : dist (x q.1) (a q.1) < ε := by
       have hle := PiLp.dist_apply_le
-        (x := ContinuousLinearMap.diagOp (H := H) (ι := s) x ξs)
-        (y := ContinuousLinearMap.diagOp (H := H) (ι := s) a ξs) qs
-      have hcoord' : dist ((ContinuousLinearMap.diagOp (H := H) (ι := s) x ξs) qs)
-          ((ContinuousLinearMap.diagOp (H := H) (ι := s) a ξs) qs) < ε := by
+        (x := diagOp (H := H) (ι := s) x ξs)
+        (y := diagOp (H := H) (ι := s) a ξs) qs
+      have hcoord' : dist ((diagOp (H := H) (ι := s) x ξs) qs)
+          ((diagOp (H := H) (ι := s) a ξs) qs) < ε := by
         exact lt_of_le_of_lt hle hdist
-      simpa [ξs, ContinuousLinearMap.diagOp_apply, PiLp.toLp_apply] using hcoord'
+      simpa [ξs, diagOp_apply, PiLp.toLp_apply] using hcoord'
     have hvec : ‖(a - x) q.1‖ < ε := by
-      simpa [dist_eq_norm, ContinuousLinearMap.sub_apply, norm_sub_rev] using hcoord
+      simpa [dist_eq_norm, sub_apply, norm_sub_rev] using hcoord
     have hnorm_le_C : ‖q.2‖ ≤ C := by
       have hnn : ‖q.2‖₊ ≤ M := by
         dsimp [M]
@@ -433,8 +431,8 @@ theorem double_centralizer_mem_closure_image_toWOT
         exact lt_of_le_of_lt hleop (hCε ▸ hlt_Cε)
     rw [Seminorm.mem_ball]
     change ‖q.2 (((toWOT a - toWOT x) q.1))‖ < r
-    simpa [toWOT, ContinuousLinearMap.toWOT_apply, ContinuousLinearMapWOT.sub_apply,
-      ContinuousLinearMap.sub_apply] using hlt_r
+    simpa [toWOT, toWOT_apply, ContinuousLinearMapWOT.sub_apply,
+      sub_apply] using hlt_r
   refine ⟨toWOT a, hsub hsball, ?_⟩
   exact ⟨a, ha, rfl⟩
 
@@ -443,26 +441,25 @@ its double commutant if and only if it is weak-operator-topology closed. -/
 theorem double_commutant_iff_isClosed_image_toWOT
     (S : StarSubalgebra ℂ (H →L[ℂ] H)) :
     Set.centralizer (Set.centralizer (S : Set (H →L[ℂ] H))) = (S : Set (H →L[ℂ] H)) ↔
-      IsClosed ((ContinuousLinearMap.toWOT (RingHom.id ℂ) H H) '' (S : Set (H →L[ℂ] H))) := by
+      IsClosed ((toWOT (RingHom.id ℂ) H H) '' (S : Set (H →L[ℂ] H))) := by
   constructor
   · intro hS
     simpa [hS] using
-      (ContinuousLinearMap.isClosed_image_toWOT_centralizer
+      (isClosed_image_toWOT_centralizer
         (T := Set.centralizer (S : Set (H →L[ℂ] H))))
   · intro hClosed
     apply Set.Subset.antisymm
     · intro x hx
       have hxclosure := double_centralizer_mem_closure_image_toWOT (H := H) S hx
-      have hximage : (ContinuousLinearMap.toWOT (RingHom.id ℂ) H H x) ∈
-          (ContinuousLinearMap.toWOT (RingHom.id ℂ) H H) '' (S : Set (H →L[ℂ] H)) := by
+      have hximage : (toWOT (RingHom.id ℂ) H H x) ∈
+          (toWOT (RingHom.id ℂ) H H) '' (S : Set (H →L[ℂ] H)) := by
         simpa [hClosed.closure_eq] using hxclosure
       rcases hximage with ⟨a, ha, hax⟩
-      have hax' : a = x := (ContinuousLinearMap.toWOT (RingHom.id ℂ) H H).injective hax
+      have hax' : a = x := (toWOT (RingHom.id ℂ) H H).injective hax
       have hxa : x = a := hax'.symm
       simpa [hxa] using ha
     · simpa using (Set.subset_centralizer_centralizer (S := (S : Set (H →L[ℂ] H))))
 
-open ContinuousLinearMap in
 /-- An idempotent is an element in a von Neumann algebra if and only if
 its range and kernel are invariant under the commutant. -/
 theorem IsIdempotentElem.mem_iff {e : H →L[ℂ] H} (h : IsIdempotentElem e)
@@ -471,7 +468,7 @@ theorem IsIdempotentElem.mem_iff {e : H →L[ℂ] H} (h : IsIdempotentElem e)
       e.range ∈ Module.End.invtSubmodule y ∧ e.ker ∈ Module.End.invtSubmodule y := by
   conv_rhs => simp [← h.commute_iff, Commute.symm_iff (a := e), commute_iff_eq, ← mem_commutant_iff]
 
-open VonNeumannAlgebra ContinuousLinearMap in
+open VonNeumannAlgebra in
 /-- A star projection is an element in a von Neumann algebra if and only if
 its range is invariant under the commutant. -/
 theorem IsStarProjection.mem_iff {e : H →L[ℂ] H} (he : IsStarProjection e)
@@ -482,4 +479,5 @@ theorem IsStarProjection.mem_iff {e : H →L[ℂ] H} (he : IsStarProjection e)
   intro h x hx
   simpa [he.isSelfAdjoint.star_eq] using congr(star $(h _ (star_mem hx)))
 
+end
 end VonNeumannAlgebra
