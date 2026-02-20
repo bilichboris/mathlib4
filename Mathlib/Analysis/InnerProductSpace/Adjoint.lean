@@ -195,6 +195,23 @@ theorem orthogonal_range (T : E →L[𝕜] F) : T.rangeᗮ = T†.ker := by
   rw [← T†.ker.orthogonal_orthogonal, T†.orthogonal_ker]
   simp
 
+/-- If a subspace is invariant under the adjoint of an operator, then its orthogonal complement is
+invariant under the operator. -/
+theorem _root_.Submodule.orthogonal_mem_invtSubmodule_of_adjoint (K : Submodule 𝕜 E)
+    {a : E →L[𝕜] E}
+    (hK : K ∈ Module.End.invtSubmodule ((a†) : E →ₗ[𝕜] E)) :
+    Kᗮ ∈ Module.End.invtSubmodule (a : E →ₗ[𝕜] E) := by
+  rw [Module.End.mem_invtSubmodule]
+  intro v hv
+  change a v ∈ Kᗮ
+  rw [Submodule.mem_orthogonal] at hv ⊢
+  intro u hu
+  have hu' : (a†) u ∈ K := hK hu
+  have hvu : ⟪(a†) u, v⟫ = 0 := hv ((a†) u) hu'
+  have hadj : ⟪(a†) u, v⟫ = ⟪u, a v⟫ := by
+    simpa using (ContinuousLinearMap.adjoint_inner_left (A := a) (x := v) (y := u))
+  exact hadj.symm.trans hvu
+
 omit [CompleteSpace E] in
 theorem ker_le_ker_iff_range_le_range [FiniteDimensional 𝕜 E] {T U : E →L[𝕜] E}
     (hT : T.IsSymmetric) (hU : U.IsSymmetric) :

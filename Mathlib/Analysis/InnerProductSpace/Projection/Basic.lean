@@ -307,6 +307,8 @@ lemma ker_starProjection (U : Submodule 𝕜 E) [U.HasOrthogonalProjection] :
   rw [LinearMap.IsIdempotentElem.ker_eq_range U.isIdempotentElem_starProjection.toLinearMap,
     ← range_starProjection Uᗮ, starProjection_orthogonal, coe_sub, coe_id]
 
+/-- The orthogonal projection onto a subspace commutes with a linear map that leaves the subspace
+and its orthogonal complement invariant. -/
 theorem commute_starProjection_of_invtSubmodule (U : Submodule 𝕜 E) [U.HasOrthogonalProjection]
     (a : E →L[𝕜] E)
     (hU : U ∈ Module.End.invtSubmodule (a : E →ₗ[𝕜] E))
@@ -331,6 +333,19 @@ theorem commute_starProjection_of_invtSubmodule (U : Submodule 𝕜 E) [U.HasOrt
   change U.starProjection * a = a * U.starProjection
   ext v
   simpa [ContinuousLinearMap.mul_def] using congrArg (fun f : E →ₗ[𝕜] E => f v) hcomm.eq
+
+/-- If a linear map commutes with the orthogonal projection onto a subspace,
+then the subspace is invariant under the map. -/
+theorem invtSubmodule_of_commute_starProjection (U : Submodule 𝕜 E) [U.HasOrthogonalProjection]
+    (a : E →L[𝕜] E) (hcomm : Commute U.starProjection a) :
+    U ∈ Module.End.invtSubmodule (a : E →ₗ[𝕜] E) := by
+  rw [Module.End.mem_invtSubmodule]
+  intro v hv
+  have hpv : U.starProjection v = v := (Submodule.starProjection_eq_self_iff (K := U)).2 hv
+  have hpav : U.starProjection (a v) = a v := by
+    have h := congrArg (fun f : E →L[𝕜] E => f v) hcomm.eq
+    simpa [ContinuousLinearMap.mul_def, hpv] using h
+  exact (Submodule.starProjection_eq_self_iff (K := U)).1 hpav
 
 theorem _root_.LinearIsometry.map_starProjection {E E' : Type*} [NormedAddCommGroup E]
     [NormedAddCommGroup E'] [InnerProductSpace 𝕜 E] [InnerProductSpace 𝕜 E'] (f : E →ₗᵢ[𝕜] E')
