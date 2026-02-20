@@ -218,20 +218,9 @@ theorem double_centralizer_apply_mem_closure_image_apply
       refine Submodule.mem_map.mpr ?_
       refine ⟨a * b, S.mul_mem ha hb, ?_⟩
       simp [ContinuousLinearMap.mul_def]
-    rw [Module.End.mem_invtSubmodule]
-    intro v hv
-    have hv' : v ∈ closure (K0 : Set H) := by
-      dsimp [K] at hv
-      exact hv
-    have hle : K0 ≤ Submodule.comap (a : H →ₗ[ℂ] H) K0 :=
-      (Module.End.mem_invtSubmodule (a : H →ₗ[ℂ] H)).1 hK0_invt
-    have hmaps : Set.MapsTo (fun y : H => a y) (K0 : Set H) (K0 : Set H) := by
-      intro y hy
-      exact hle hy
-    have hav : a v ∈ closure (K0 : Set H) :=
-      map_mem_closure a.continuous hv' hmaps
-    change a v ∈ K0.topologicalClosure
-    exact hav
+    change K0.topologicalClosure ∈ Module.End.invtSubmodule (a : H →ₗ[ℂ] H)
+    exact Submodule.topologicalClosure_mem_invtSubmodule (R₁ := ℂ) (M₁ := H)
+      (f := a) (s := K0) hK0_invt
   let p : H →L[ℂ] H := K.starProjection
   have hp_mem : p ∈ Set.centralizer (S : Set (H →L[ℂ] H)) := by
     simpa [p] using
