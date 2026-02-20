@@ -307,6 +307,31 @@ lemma ker_starProjection (U : Submodule 𝕜 E) [U.HasOrthogonalProjection] :
   rw [LinearMap.IsIdempotentElem.ker_eq_range U.isIdempotentElem_starProjection.toLinearMap,
     ← range_starProjection Uᗮ, starProjection_orthogonal, coe_sub, coe_id]
 
+theorem commute_starProjection_of_invtSubmodule (U : Submodule 𝕜 E) [U.HasOrthogonalProjection]
+    (a : E →L[𝕜] E)
+    (hU : U ∈ Module.End.invtSubmodule (a : E →ₗ[𝕜] E))
+    (hUorth : Uᗮ ∈ Module.End.invtSubmodule (a : E →ₗ[𝕜] E)) :
+    Commute U.starProjection a := by
+  have hRange :
+      ((U.starProjection : E →L[𝕜] E).toLinearMap).range ∈
+        Module.End.invtSubmodule (a : E →ₗ[𝕜] E) := by
+    simpa [Submodule.range_starProjection] using hU
+  have hKer :
+      ((U.starProjection : E →L[𝕜] E).toLinearMap).ker ∈
+        Module.End.invtSubmodule (a : E →ₗ[𝕜] E) := by
+    simpa [Submodule.ker_starProjection] using hUorth
+  have hUidem : IsIdempotentElem ((U.starProjection : E →L[𝕜] E).toLinearMap) :=
+    ContinuousLinearMap.IsIdempotentElem.toLinearMap
+      (Submodule.isIdempotentElem_starProjection (K := U))
+  have hcomm :
+      Commute ((U.starProjection : E →L[𝕜] E).toLinearMap) (a : E →ₗ[𝕜] E) :=
+    (LinearMap.IsIdempotentElem.commute_iff
+      (T := (a : E →ₗ[𝕜] E)) (f := (U.starProjection : E →L[𝕜] E).toLinearMap) hUidem).2
+      ⟨hRange, hKer⟩
+  change U.starProjection * a = a * U.starProjection
+  ext v
+  simpa [ContinuousLinearMap.mul_def] using congrArg (fun f : E →ₗ[𝕜] E => f v) hcomm.eq
+
 theorem _root_.LinearIsometry.map_starProjection {E E' : Type*} [NormedAddCommGroup E]
     [NormedAddCommGroup E'] [InnerProductSpace 𝕜 E] [InnerProductSpace 𝕜 E'] (f : E →ₗᵢ[𝕜] E')
     (p : Submodule 𝕜 E) [p.HasOrthogonalProjection] [(p.map f.toLinearMap).HasOrthogonalProjection]

@@ -224,27 +224,11 @@ theorem double_centralizer_apply_mem_closure_image_apply
         (ContinuousLinearMap.adjoint_inner_left (A := a) (x := v) (y := u))
     exact hadj.symm.trans hvu
   let p : H →L[ℂ] H := K.starProjection
-  have hp_eq : ∀ {a : H →L[ℂ] H}, a ∈ S → p * a = a * p := by
-    intro a ha
-    have hRange :
-        ((p : H →L[ℂ] H).toLinearMap).range ∈ Module.End.invtSubmodule (a : H →ₗ[ℂ] H) := by
-      simpa [p, Submodule.range_starProjection] using (hK_invt ha)
-    have hKer :
-        ((p : H →L[ℂ] H).toLinearMap).ker ∈ Module.End.invtSubmodule (a : H →ₗ[ℂ] H) := by
-      simpa [p, Submodule.ker_starProjection] using (hKorth_invt ha)
-    have hp_idem_cont : IsIdempotentElem (p : H →L[ℂ] H) :=
-      Submodule.isIdempotentElem_starProjection (K := K)
-    have hp_idem : IsIdempotentElem ((p : H →L[ℂ] H).toLinearMap) :=
-      ContinuousLinearMap.IsIdempotentElem.toLinearMap hp_idem_cont
-    have hcomm : Commute ((p : H →L[ℂ] H).toLinearMap) (a : H →ₗ[ℂ] H) :=
-      (LinearMap.IsIdempotentElem.commute_iff
-        (T := (a : H →ₗ[ℂ] H)) (f := ((p : H →L[ℂ] H).toLinearMap)) hp_idem).2
-        ⟨hRange, hKer⟩
-    ext v
-    simpa [ContinuousLinearMap.mul_def] using congrArg (fun f : H →ₗ[ℂ] H => f v) hcomm.eq
   have hp_mem : p ∈ Set.centralizer (S : Set (H →L[ℂ] H)) := by
     intro a ha
-    simpa [eq_comm] using (hp_eq ha)
+    simpa [p, eq_comm] using
+      (Submodule.commute_starProjection_of_invtSubmodule (U := K) (a := a)
+        (hK_invt ha) (hKorth_invt ha)).eq
   have hpx : p * x = x * p := hx p hp_mem
   have hxK : ∀ v ∈ K, x v ∈ K := by
     intro v hv
