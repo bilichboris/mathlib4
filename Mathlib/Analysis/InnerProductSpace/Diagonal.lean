@@ -12,7 +12,7 @@ public import Mathlib.Analysis.InnerProductSpace.PiL2
 # Diagonal operators on finite `PiLp 2` direct sums
 
 This file defines diagonal actions of bounded operators on finite direct sums represented as
-`PiLp 2`, together with coordinate maps for matrix-entry arguments.
+`PiLp 2`, together with coordinate.
 
 ## Main definitions
 
@@ -110,8 +110,6 @@ noncomputable def diagOpStarAlgHom :
       map_star' _ := diagOp_star (H := H) (ι := ι) _ }
 
 end CompleteSpace
-
-/-! ### Coordinate injections and matrix entries -/
 
 section DecidableEq
 
