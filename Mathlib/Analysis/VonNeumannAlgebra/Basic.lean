@@ -277,39 +277,17 @@ lemma diagOp_mem_double_centralizer_map {ι : Type v} [Fintype ι]
           Set (PiLp 2 (fun _ : ι => H) →L[ℂ] PiLp 2 (fun _ : ι => H))) :=
       ⟨a, ha, rfl⟩
     have hza : diagOp (ι := ι) a * z = z * diagOp (ι := ι) a := hz _ haDiag
-    ext u
-    have hu := congrArg (fun T : (PiLp 2 (fun _ : ι => H) →L[ℂ] PiLp 2 (fun _ : ι => H)) =>
-      (T (diagOpSingle (H := H) j u)) i) hza
-    have hs : (diagOp (ι := ι) a) (diagOpSingle (H := H) j u) =
-        diagOpSingle (H := H) j (a u) := by
-      ext k
-      by_cases hk : k = j
-      · subst hk
-        simp [diagOp_apply, diagOpSingle_apply]
-      · simp [diagOp_apply, diagOpSingle_apply, hk]
-    have hu' : a ((z (diagOpSingle (H := H) j u)) i) = (z (diagOpSingle (H := H) j (a u))) i := by
-      simpa [mul_def, hs] using hu
-    simpa [mul_def, diagOpEntry] using hu'
-  ext v i
-  have hleft :
-      (z (diagOp (ι := ι) x v)) i = ∑ j, diagOpEntry (H := H) z i j (x (v j)) := by
-    simpa [diagOp_apply] using (coord_eq_sum_diagOpEntry (H := H) z i (diagOp (ι := ι) x v))
-  have hright :
-      (diagOp (ι := ι) x (z v)) i = ∑ j, diagOpEntry (H := H) z i j (x (v j)) := by
-    calc
-      (diagOp (ι := ι) x (z v)) i = x ((z v) i) := by
-        simp [diagOp_apply]
-      _ = x (∑ j, diagOpEntry (H := H) z i j (v j)) := by
-        rw [coord_eq_sum_diagOpEntry (H := H) z i v]
-      _ = ∑ j, x (diagOpEntry (H := H) z i j (v j)) := by simp
-      _ = ∑ j, diagOpEntry (H := H) z i j (x (v j)) := by
-        refine Finset.sum_congr rfl ?_
-        intro j _
-        have hcomm : diagOpEntry (H := H) z i j * x = x * diagOpEntry (H := H) z i j := by
-          exact hx _ (hEntryMem i j)
-        have hcommv := congrArg (fun T : H →L[ℂ] H => T (v j)) hcomm
-        simpa [mul_def] using hcommv.symm
-  simp [mul_def, hleft, hright]
+    have hzaComm : Commute (diagOp (ι := ι) a) z := by
+      simpa [Commute] using hza
+    have hEntryComm : Commute (diagOpEntry (H := H) z i j) a :=
+      (diagOp_commute_iff_entry_commute (H := H) (ι := ι) a z).1 hzaComm i j
+    simpa [Commute] using hEntryComm.symm
+  have hxEntryComm : ∀ i j, Commute (diagOpEntry (H := H) z i j) x := by
+    intro i j
+    simpa [Commute] using hx _ (hEntryMem i j)
+  have hxDiagComm : Commute (diagOp (H := H) (ι := ι) x) z :=
+    (diagOp_commute_iff_entry_commute (H := H) (ι := ι) x z).2 hxEntryComm
+  simpa [Commute] using hxDiagComm.symm
 
 /-- Finite-family closure approximation obtained from the matrix trick on finite direct sums. -/
 theorem double_centralizer_finite_family_mem_closure_image_apply {ι : Type v} [Fintype ι]

@@ -171,6 +171,44 @@ lemma coord_eq_sum_diagOpEntry (z : PiLp 2 (fun _ : ι => H) →L[ℂ] PiLp 2 (f
     _ = ∑ j, (z (diagOpSingle (H := H) j (v j))) i := by simp
     _ = ∑ j, diagOpEntry (H := H) z i j (v j) := by simp [diagOpEntry]
 
+/-- Commutation with a diagonal lift is equivalent to entrywise commutation. -/
+theorem diagOp_commute_iff_entry_commute (a : H →L[ℂ] H)
+    (z : PiLp 2 (fun _ : ι => H) →L[ℂ] PiLp 2 (fun _ : ι => H)) :
+    Commute (diagOp (ι := ι) a) z ↔
+      ∀ i j, Commute (diagOpEntry (H := H) z i j) a := by
+  constructor
+  · intro h i j
+    rw [Commute] at h ⊢
+    have h' := congrArg
+      (fun t =>
+        (PiLp.proj 2 (fun _ : ι => H) i) ∘L t ∘L diagOpSingle (H := H) j)
+      h
+    simpa [eq_comm, diagOpEntry, ContinuousLinearMap.mul_def, ContinuousLinearMap.comp_assoc]
+      using h'
+  · intro h
+    rw [Commute]
+    ext x i
+    calc
+      ((diagOp (ι := ι) a * z) x) i = a ((z x) i) := by
+        simp [ContinuousLinearMap.mul_def, diagOp_apply]
+      _ = a (∑ j, diagOpEntry (H := H) z i j (x j)) := by
+        rw [coord_eq_sum_diagOpEntry (H := H) (ι := ι) z i x]
+      _ = ∑ j, a (diagOpEntry (H := H) z i j (x j)) := by
+        symm
+        exact (map_sum a (fun j => diagOpEntry (H := H) z i j (x j)) Finset.univ).symm
+      _ = ∑ j, diagOpEntry (H := H) z i j (a (x j)) := by
+        refine Finset.sum_congr rfl ?_
+        intro j _
+        simpa [ContinuousLinearMap.mul_def] using
+          (congrArg (fun T : H →L[ℂ] H => T (x j)) (h i j).eq).symm
+      _ = ∑ j, diagOpEntry (H := H) z i j ((diagOp (ι := ι) a x) j) := by
+        simp [diagOp_apply]
+      _ = (z (diagOp (ι := ι) a x)) i := by
+        symm
+        exact coord_eq_sum_diagOpEntry (H := H) (ι := ι) z i (diagOp (ι := ι) a x)
+      _ = ((z * diagOp (ι := ι) a) x) i := by
+        simp [ContinuousLinearMap.mul_def]
+
 end DecidableEq
 
 end
