@@ -57,24 +57,10 @@ theorem isClosed_image_toWOT_centralizer (T : Set (H →L[𝕜] H)) :
   classical
   let toWOTEquiv : (H →L[𝕜] H) ≃ₗ[𝕜] (H →WOT[𝕜] H) :=
     ContinuousLinearMap.toWOT (RingHom.id 𝕜) H H
-  let leftCompWOT (z : H →L[𝕜] H) : (H →WOT[𝕜] H) → (H →WOT[𝕜] H) :=
-    fun A => toWOTEquiv (z.comp (toWOTEquiv.symm A))
-  let rightCompWOT (z : H →L[𝕜] H) : (H →WOT[𝕜] H) → (H →WOT[𝕜] H) :=
-    fun A => toWOTEquiv ((toWOTEquiv.symm A).comp z)
-  have hcont_left : ∀ z : H →L[𝕜] H, Continuous (leftCompWOT z) := by
-    intro z
-    refine ContinuousLinearMapWOT.continuous_of_dual_apply_continuous ?_
-    intro x y
-    simpa [leftCompWOT, toWOTEquiv, ContinuousLinearMap.comp_apply] using
-      (ContinuousLinearMapWOT.continuous_dual_apply (σ := RingHom.id 𝕜) (x := x) (y := y.comp z))
-  have hcont_right : ∀ z : H →L[𝕜] H, Continuous (rightCompWOT z) := by
-    intro z
-    refine ContinuousLinearMapWOT.continuous_of_dual_apply_continuous ?_
-    intro x y
-    simpa [rightCompWOT, toWOTEquiv, ContinuousLinearMap.comp_apply] using
-      (ContinuousLinearMapWOT.continuous_dual_apply (σ := RingHom.id 𝕜) (x := z x) (y := y))
   have hset : (toWOTEquiv '' Set.centralizer T) =
-      ⋂ z ∈ T, {A : H →WOT[𝕜] H | leftCompWOT z A = rightCompWOT z A} := by
+      ⋂ z ∈ T, {A : H →WOT[𝕜] H |
+        ContinuousLinearMap.compLeftWOT (E := H) z A =
+          ContinuousLinearMap.compRightWOT (G := H) z A} := by
     ext A
     constructor
     · rintro ⟨a, ha, rfl⟩
@@ -82,19 +68,24 @@ theorem isClosed_image_toWOT_centralizer (T : Set (H →L[𝕜] H)) :
       intro z
       rw [Set.mem_iInter]
       intro hz
-      simpa [leftCompWOT, rightCompWOT, toWOTEquiv, ContinuousLinearMap.mul_def] using
+      simpa [ContinuousLinearMap.compLeftWOT, ContinuousLinearMap.compRightWOT,
+        toWOTEquiv, ContinuousLinearMap.mul_def] using
         congrArg toWOTEquiv (ha z hz)
     · intro hA
       refine ⟨toWOTEquiv.symm A, ?_, by simp [toWOTEquiv]⟩
       intro z hz
-      have hzA : leftCompWOT z A = rightCompWOT z A := by
+      have hzA :
+          ContinuousLinearMap.compLeftWOT (E := H) z A =
+            ContinuousLinearMap.compRightWOT (G := H) z A := by
         exact (Set.mem_iInter.mp (Set.mem_iInter.mp hA z) hz)
-      simpa [leftCompWOT, rightCompWOT, toWOTEquiv, ContinuousLinearMap.mul_def] using
+      simpa [ContinuousLinearMap.compLeftWOT, ContinuousLinearMap.compRightWOT,
+        toWOTEquiv, ContinuousLinearMap.mul_def] using
         congrArg toWOTEquiv.symm hzA
   have hclosed : IsClosed (toWOTEquiv '' Set.centralizer T) := by
     rw [hset]
     exact isClosed_biInter fun z hz =>
-      isClosed_eq (hcont_left z) (hcont_right z)
+      isClosed_eq (ContinuousLinearMap.continuous_compLeftWOT (E := H) z)
+        (ContinuousLinearMap.continuous_compRightWOT (G := H) z)
   simpa [toWOTEquiv] using hclosed
 
 end ContinuousLinearMap

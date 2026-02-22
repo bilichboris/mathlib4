@@ -299,4 +299,73 @@ def ContinuousLinearMap.toWOTCLM : (E →SL[σ] F) →L[𝕜₂] (E →SWOT[σ] 
 
 end toWOT_continuous
 
+section compWOT_continuous
+
+variable {𝕜 : Type*} [NormedField 𝕜]
+  {E F G : Type*}
+  [AddCommGroup E] [TopologicalSpace E] [Module 𝕜 E]
+  [AddCommGroup F] [TopologicalSpace F] [Module 𝕜 F]
+  [AddCommGroup G] [TopologicalSpace G] [Module 𝕜 G]
+
+section Left
+
+variable [IsTopologicalAddGroup F] [ContinuousConstSMul 𝕜 F]
+  [IsTopologicalAddGroup G] [ContinuousConstSMul 𝕜 G]
+
+variable (E) in
+/-- Left composition by a fixed continuous linear map, viewed on WOT type copies. -/
+def _root_.ContinuousLinearMap.compLeftWOT (z : F →L[𝕜] G) :
+    (E →WOT[𝕜] F) → (E →WOT[𝕜] G) :=
+  fun A =>
+    (ContinuousLinearMap.toWOT (RingHom.id 𝕜) E G)
+      (z.comp ((ContinuousLinearMap.toWOT (RingHom.id 𝕜) E F).symm A))
+
+@[simp]
+lemma _root_.ContinuousLinearMap.compLeftWOT_apply (z : F →L[𝕜] G) (A : E →WOT[𝕜] F) (x : E) :
+    ContinuousLinearMap.compLeftWOT (E := E) z A x = z (A x) := by
+  rfl
+
+/-- Separate continuity of left composition in the weak operator topology. -/
+@[fun_prop]
+lemma _root_.ContinuousLinearMap.continuous_compLeftWOT (z : F →L[𝕜] G) :
+    Continuous (ContinuousLinearMap.compLeftWOT (E := E) z) := by
+  refine ContinuousLinearMapWOT.continuous_of_dual_apply_continuous ?_
+  intro x y
+  simpa [ContinuousLinearMap.compLeftWOT, ContinuousLinearMap.comp_apply] using
+    (ContinuousLinearMapWOT.continuous_dual_apply (σ := RingHom.id 𝕜)
+      (x := x) (y := y.comp z))
+
+end Left
+
+section Right
+
+variable [IsTopologicalAddGroup G] [ContinuousConstSMul 𝕜 G]
+
+variable (G) in
+/-- Right composition by a fixed continuous linear map, viewed on WOT type copies. -/
+def _root_.ContinuousLinearMap.compRightWOT (z : E →L[𝕜] F) :
+    (F →WOT[𝕜] G) → (E →WOT[𝕜] G) :=
+  fun A =>
+    (ContinuousLinearMap.toWOT (RingHom.id 𝕜) E G)
+      (((ContinuousLinearMap.toWOT (RingHom.id 𝕜) F G).symm A).comp z)
+
+@[simp]
+lemma _root_.ContinuousLinearMap.compRightWOT_apply (z : E →L[𝕜] F) (A : F →WOT[𝕜] G) (x : E) :
+    ContinuousLinearMap.compRightWOT (G := G) z A x = A (z x) := by
+  rfl
+
+/-- Separate continuity of right composition in the weak operator topology. -/
+@[fun_prop]
+lemma _root_.ContinuousLinearMap.continuous_compRightWOT (z : E →L[𝕜] F) :
+    Continuous (ContinuousLinearMap.compRightWOT (G := G) z) := by
+  refine ContinuousLinearMapWOT.continuous_of_dual_apply_continuous ?_
+  intro x y
+  simpa [ContinuousLinearMap.compRightWOT, ContinuousLinearMap.comp_apply] using
+    (ContinuousLinearMapWOT.continuous_dual_apply (σ := RingHom.id 𝕜)
+      (x := z x) (y := y))
+
+end Right
+
+end compWOT_continuous
+
 end ContinuousLinearMapWOT
